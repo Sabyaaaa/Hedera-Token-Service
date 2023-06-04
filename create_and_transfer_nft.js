@@ -103,7 +103,44 @@ async function createFirstNft() {
       `- Created NFT ${tokenId} with serial: ${mintRx.serials[0].low} \n`
     );
   
-    
+    //Create the associate transaction and sign with Alice's key
+    const associateAliceTx = await new TokenAssociateTransaction()
+      .setAccountId(aliceId)
+      .setTokenIds([tokenId])
+      .freezeWith(client)
+      .sign(aliceKey);
+  
+    //Submit the transaction to a Hedera network
+    const associateAliceTxSubmit = await associateAliceTx.execute(client);
+  
+    //Get the transaction receipt
+    const associateAliceRx = await associateAliceTxSubmit.getReceipt(client);
+  
+    //Confirm the transaction was successful
+    console.log(
+      `- NFT association with Alice's account: ${associateAliceRx.status}\n`
+    );
+  
+    // Check the balance before the transfer for the treasury account
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(treasuryId)
+      .execute(client);
+    console.log(
+      `- Treasury balance: ${balanceCheckTx.tokens._map.get(
+        tokenId.toString()
+      )} NFTs of ID ${tokenId}`
+    );
+  
+    // Check the balance before the transfer for Alice's account
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(aliceId)
+      .execute(client);
+    console.log(
+      `- Alice's balance: ${balanceCheckTx.tokens._map.get(
+        tokenId.toString()
+      )} NFTs of ID ${tokenId}`
+    );
+  
   }
   createFirstNft();
   
