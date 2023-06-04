@@ -141,6 +141,39 @@ async function createFirstNft() {
       )} NFTs of ID ${tokenId}`
     );
   
+    // Transfer the NFT from treasury to Alice
+    // Sign with the treasury key to authorize the transfer
+    const tokenTransferTx = await new TransferTransaction()
+      .addNftTransfer(tokenId, 1, treasuryId, aliceId)
+      .freezeWith(client)
+      .sign(treasuryKey);
+  
+    const tokenTransferSubmit = await tokenTransferTx.execute(client);
+    const tokenTransferRx = await tokenTransferSubmit.getReceipt(client);
+  
+    console.log(
+      `\n- NFT transfer from Treasury to Alice: ${tokenTransferRx.status} \n`
+    );
+  
+    // Check the balance of the treasury account after the transfer
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(treasuryId)
+      .execute(client);
+    console.log(
+      `- Treasury balance: ${balanceCheckTx.tokens._map.get(
+        tokenId.toString()
+      )} NFTs of ID ${tokenId}`
+    );
+  
+    // Check the balance of Alice's account after the transfer
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(aliceId)
+      .execute(client);
+    console.log(
+      `- Alice's balance: ${balanceCheckTx.tokens._map.get(
+        tokenId.toString()
+      )} NFTs of ID ${tokenId}`
+    );
   }
   createFirstNft();
   
